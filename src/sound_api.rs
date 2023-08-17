@@ -37,6 +37,7 @@ impl SoundAPI {
         let mut mixer = Mixer::new(sample_rate as usize, channels as usize, command_cons, sound_cons);
 
         let output_callback = move |output: &mut [f32], info: &cpal::OutputCallbackInfo| {
+            mixer.load_sounds();
             mixer.handle_commands();
             mixer.write_samples(output);
         };
