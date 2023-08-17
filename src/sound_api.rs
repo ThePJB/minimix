@@ -50,6 +50,7 @@ impl SoundAPI {
 
         let output_callback = move |output: &mut [f32], info: &cpal::OutputCallbackInfo| {
             mixer.handle_commands();
+            mixer.write_samples(output);
             for frame in output.chunks_mut(channels as usize) {
                 for sample in frame.iter_mut() {
                     *sample = mixer.tick();

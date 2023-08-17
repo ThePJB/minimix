@@ -356,6 +356,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
+name = "minimix"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cpal",
+ "riff-wave",
+ "ringbuf",
+]
+
+[[package]]
 name = "ndk"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -773,16 +783,6 @@ name = "wasm-bindgen-shared"
 version = "0.2.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca6ad05a4870b2bf5fe995117d3728437bd27d7cd5f06f13c17443ef369775a1"
-
-[[package]]
-name = "wavjockey"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "cpal",
- "riff-wave",
- "ringbuf",
-]
 
 [[package]]
 name = "web-sys"

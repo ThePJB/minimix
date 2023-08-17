@@ -6,6 +6,7 @@ use ringbuf::*;
 
 // a few issues
 // need to bake in the index of the buffer
+// or dont bake, look up, but just tick on a data basis
 
 
 pub enum Command {
@@ -42,6 +43,10 @@ pub struct Channel {
 // !!!! playing track needs to be able to bake the index of its underlying track !!!!
 // !!!! 2 Tracks to a channel!
 // !!!! its kind of 2 tracks with volume lerp
+
+
+// lolz a more mvp one where samples get loaded and moved in
+// but the runtime loading and manipulating capabilities tho
 
 
 // track.seek - could make music
@@ -100,7 +105,10 @@ pub struct Mixer {
     command_consumer: Consumer<Command>,
 
 }
+// t0
+// t1
 impl Mixer {
+    pub fn write_samples(output: &mut [f32]) 
     pub fn tick_channel(&mut self, idx: usize) -> f32 {
         
     } 
