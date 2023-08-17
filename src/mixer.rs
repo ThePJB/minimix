@@ -1,19 +1,11 @@
 use crate::rng::*;
 use crate::sound_api::*;
-use crate::load_wav::*;
+use crate::track::*;
+use crate::sound_library::*;
 
 use ringbuf::*;
 
-// a few issues
-// need to bake in the index of the buffer
-// or dont bake, look up, but just tick on a data basis
-
-
 pub enum Command {
-    Load {
-        path: String,
-        id: SoundHandle,
-    },
     Play {
         params: SoundDesc,
         id: PlayingSoundHandle,
@@ -23,115 +15,39 @@ pub enum Command {
     }
 }
 
-pub struct Channel {
-    t: u64,
-    t_max: u64,
-    id: PlayingSoundHandle,
-    desc: SoundDesc,
-}
-
-// what about a_index, b_index
-// a_index a_index fade? why not bra
-// think dj decks
-// yea each channel needs 2 'tracks' or whatever
-// and give tracks whatever relative time u want
-// manage times in seconds or what?
-
-
-
-
-// !!!! playing track needs to be able to bake the index of its underlying track !!!!
-// !!!! 2 Tracks to a channel!
-// !!!! its kind of 2 tracks with volume lerp
-
-
-// lolz a more mvp one where samples get loaded and moved in
-// but the runtime loading and manipulating capabilities tho
-
-
-// track.seek - could make music
-
-// oh yeah and if you could record and replay tracks that would be sweet
-// yea runtime manageable please
-
-// 2 tracks to a stream, tracks with own offset (not t, t => offset)
-// we could honestly move the sound sources in and have them be completely static ..... but dynamic
-// just at creation time put the buffer 
-// but i like the idea of addressing the buffers, supporting operations, crop etc.
-
-// oh yea and race condition of loading wav file vs. playing wav file -- Just dont crash and its OK
-
-impl Channel {
-    // pub fn new(id: PlayingSoundHandle, desc: SoundDesc) {
-    //     Channel {
-
-    //     }
-    // }
-    pub fn tick(&mut self, mixer: &Mixer) -> f32 {
-        let sd = self.desc;
-        let b1 = self.get_sound_buffer(sd.a);
-        let s1 = b1[self.t];
-        if let Some(b) = sd.b {
-            let t_transition = if self.t < sd.t_begin_transition {
-                0.0
-            } else if self.t < sd.t_end_transition {
-                 (self.t - sd.t_begin_transition) as f32 /
-                 (sd.t_end_transition - sd.t_begin_transition) as f32
-            } else {
-                1.0
-            };
-            let b2 = self.get_sound_buffer(b);
-            let s2 = b2[self.t];
-            
-
-        } else {
-            acc += sd.vol * b1[self.channels[i].t];
-
-        }
-        self.t += 1;
-        if sd.repeat {
-            self.t = self.t % self.t_max;
-        }
-    }
-}
-
 pub struct Mixer {
     pub sample_rate: usize,
     pub nchannels: usize,
     rng: Rng,
-    sound_library: SoundLibrary,
-    sounds: Vec<SoundBuffer>,
-    channels: Vec<Channel>,
     command_consumer: Consumer<Command>,
+    sound_consumer: Consumer<Sound>,
+    sound_library: SoundLibrary,
+    tracks: Vec<Track>,
 
 }
-// t0
-// t1
 impl Mixer {
-    pub fn write_samples(output: &mut [f32]) 
-    pub fn tick_channel(&mut self, idx: usize) -> f32 {
-        
-    } 
-    pub fn tick(&mut self) -> f32 {
-        let mut acc = 0.0;
-        for i in 0..self.channels.len() {
-            self.channels[i].tick(self);
-
-            self.tick_channel(i);
-            
-                // and get fade etc
-                // and do other one
-                // and deleting if done, maybe make delete a field of channel
-                
-            }
-            self.channels[i].t += 1;
+    pub fn new(sample_rate: usize, nchannels: usize, command_consumer: Consumer<Command>, sound_consumer: Consumer<Sound>) -> Self {
+        let rng = Rng::new_random();
+        let sound_library = SoundLibrary::new();
+        let tracks = vec![];
+        Mixer {
+            sample_rate,
+            nchannels,
+            rng,
+            command_consumer,
+            sound_consumer,
+            sound_library,
+            tracks,
         }
-        0.0
+    }
+    pub fn write_samples(&mut self, output: &mut [f32]) {
+        for track in self.tracks.iter_mut() {
+            track.accumulate_buffer(output, self.nchannels, &self.sound_library);
+        }
     }
     pub fn handle_command(&mut self, command: Command) {
         match command {
             Command::Play{params, id} => {},
-            Command::Load{path, id} => self.load(path, id),
             Command::Stop{id} => {},
         }
     }
@@ -140,32 +56,20 @@ impl Mixer {
             self.handle_command(command)
         }
     }
-    pub fn load(&mut self, path: String, id: SoundHandle) {
-        if let Some(samples) = load_wav(&path) {
-            self.sounds.push(SoundBuffer { samples, id });
+    pub fn load_sounds(&mut self) {
+        while let Some(sound) = self.sound_consumer.next() {
+            self.sound_library.push(sound);
         }
     }
     pub fn stop(&mut self, id: SoundHandle) {
-        for i in 0..self.channels.len() {
-            if self.channels[i].id == id {
-                self.channels.swap_remove(i);
+        for i in 0..self.tracks.len() {
+            if self.tracks[i].id == id {
+                self.tracks.swap_remove(i);
                 return;
             }
         }
     }
     pub fn play(&mut self, desc: SoundDesc, id: SoundHandle) {
-        self.channels.push(Channel {
-            t: 0,
-            id,
-            desc
-        });
-    }
-    pub fn get_sound_buffer(&self, id: SoundHandle) -> &SoundBuffer {
-        for i in 0..self.sounds.len() {
-            if self.sounds[i].id == id {
-                return &self.sounds[i]
-            }
-        }
-        panic!("invalid sound");
+        self.tracks.push(Track::new(id, desc.repeat, &self.sound_library));
     }
 }

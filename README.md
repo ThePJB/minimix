@@ -6,3 +6,5 @@ eg * fade fn, * window fn
 
 OK im gonna have just extreme basic buffer playback
 customization through buffer manipulatings
+
+todo number of channels lol.
