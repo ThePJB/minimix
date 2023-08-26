@@ -2,7 +2,7 @@ use crate::sound_api::*;
 use crate::sound_buffer::*;
 
 pub struct Sound {
-    pub id: SoundHandle,
+    pub id: BufferHandle,
     pub buf: SoundBuffer,
 }
 
@@ -17,10 +17,10 @@ impl SoundLibrary {
     pub fn push(&mut self, buf: Sound) {
         self.sounds.push(buf);
     }
-    pub fn get(&self, id: SoundHandle) -> &Sound {
+    pub fn get(&self, id: BufferHandle) -> &Sound {
         for i in 0..self.sounds.len() {
             if self.sounds[i].id == id { return &self.sounds[i] }
         }
-        panic!("invalid sound handle");
+        panic!("handle {:?} refers to nonexistant buffer", id);
     }
 }

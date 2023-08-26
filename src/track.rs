@@ -2,26 +2,28 @@ use crate::sound_library::*;
 use crate::sound_api::*;
 
 pub struct Track {
-    pub id: SoundHandle,
+    pub sound: BufferHandle,
+    pub id: TrackHandle,
     pub n: usize,
     pub len: usize,
     pub repeat: bool,
 }
 
 impl Track {
-    pub fn new(id: SoundHandle, repeat: bool, loaded_sounds: &SoundLibrary) -> Self {
-        let b = loaded_sounds.get(id);
+    pub fn new(bh: BufferHandle, th: TrackHandle, repeat: bool, loaded_sounds: &SoundLibrary) -> Self {
+        let b = loaded_sounds.get(bh);
         let len = b.buf.samples.len();
         let n = 0;
         Track {
-            id,
+            sound: bh,
+            id: th,
             n,
             len,
             repeat,
         }
     }
     pub fn accumulate_buffer(&mut self, data: &mut [f32], num_channels: usize, loaded_sounds: &SoundLibrary) {
-        let b = loaded_sounds.get(self.id);
+        let b = loaded_sounds.get(self.sound);
         for frame in data.chunks_mut(num_channels) {
             for sample in frame {
                 *sample = b.buf.samples[self.n];

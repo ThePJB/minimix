@@ -6,12 +6,33 @@ use crate::mixer::*;
 use crate::sound_buffer::*;
 use crate::sound_library::*;
 
-pub type SoundHandle = u64;
-pub type PlayingSoundHandle = u64;
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub struct BufferHandle {
+    h: u64,
+}
+impl From<u64> for BufferHandle {
+    fn from(h: u64) -> Self {
+        BufferHandle {
+            h
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub struct TrackHandle {
+    h: u64,
+}
+impl From<u64> for TrackHandle {
+    fn from(h: u64) -> Self {
+        TrackHandle {
+            h
+        }
+    }
+}
 
 pub struct SoundDesc {
     pub repeat: bool,
-    pub h: SoundHandle,
+    pub h: BufferHandle,
 }
 
 pub struct SoundAPI {
@@ -61,32 +82,36 @@ impl SoundAPI {
         }
     }
 
-    pub fn load_buffer(&mut self, buf: SoundBuffer) -> SoundHandle {
+    pub fn load_buffer(&mut self, buf: SoundBuffer) -> BufferHandle {
         let id = self.rng.next_u64();
+        let h = BufferHandle::from(id);
         let s = Sound {
-            id,
+            id: h,
             buf,
         };
         self.sound_prod.push(s);
-        id
+        h
     }
 
-    pub fn play(&mut self, sound: SoundHandle, repeat: bool) -> PlayingSoundHandle {
+    pub fn play(&mut self, sound: BufferHandle, repeat: bool) -> TrackHandle {
+        dbg!("play: ", sound);
         let params = SoundDesc {
             repeat,
             h: sound,
         };
         self.play_raw(params)
     }
-
-    pub fn play_raw(&mut self, params: SoundDesc) -> PlayingSoundHandle {
+    
+    pub fn play_raw(&mut self, params: SoundDesc) -> TrackHandle {
+        dbg!("playraw: ", params.h);
         let id = self.rng.next_u64();
-        let command = Command::Play { params, id };
+        let h = TrackHandle::from(id);
+        let command = Command::Play { params, id: h };
         self.command_prod.push(command);
-        id
+        h
     }
 
-    pub fn stop(&mut self, id: PlayingSoundHandle) {
+    pub fn stop(&mut self, id: TrackHandle) {
         self.command_prod.push(Command::Stop { id });
     }
 }

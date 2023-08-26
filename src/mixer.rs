@@ -8,10 +8,10 @@ use ringbuf::*;
 pub enum Command {
     Play {
         params: SoundDesc,
-        id: PlayingSoundHandle,
+        id: TrackHandle,
     },
     Stop {
-        id: PlayingSoundHandle,
+        id: TrackHandle,
     }
 }
 
@@ -47,8 +47,8 @@ impl Mixer {
     }
     pub fn handle_command(&mut self, command: Command) {
         match command {
-            Command::Play{params, id} => {},
-            Command::Stop{id} => {},
+            Command::Play{params, id} => self.play(params, id),
+            Command::Stop{id} => panic!("not implemented"),
         }
     }
     pub fn handle_commands(&mut self) {
@@ -58,10 +58,11 @@ impl Mixer {
     }
     pub fn load_sounds(&mut self) {
         while let Some(sound) = self.sound_consumer.next() {
+            dbg!("loadin sound", sound.id);
             self.sound_library.push(sound);
         }
     }
-    pub fn stop(&mut self, id: SoundHandle) {
+    pub fn stop(&mut self, id: TrackHandle) {
         for i in 0..self.tracks.len() {
             if self.tracks[i].id == id {
                 self.tracks.swap_remove(i);
@@ -69,7 +70,8 @@ impl Mixer {
             }
         }
     }
-    pub fn play(&mut self, desc: SoundDesc, id: SoundHandle) {
-        self.tracks.push(Track::new(id, desc.repeat, &self.sound_library));
+    pub fn play(&mut self, desc: SoundDesc, id: TrackHandle) {
+        dbg!("playin sound", id);
+        self.tracks.push(Track::new(desc.h, id, desc.repeat, &self.sound_library));
     }
 }
