@@ -24,9 +24,12 @@ impl Track {
     }
     pub fn accumulate_buffer(&mut self, data: &mut [f32], num_channels: usize, loaded_sounds: &SoundLibrary) {
         let b = loaded_sounds.get(self.sound);
+        // let b = SoundBuffer::sine(5000, 2.0*std::f32::consts::PI*100.0);
         for frame in data.chunks_mut(num_channels) {
             for sample in frame {
                 *sample = b.buf.samples[self.n];
+                // *sample = (100.0 * 2.0 * std::f32::consts::PI / 44100.0 * self.n as f32).sin()
+                // as this is expected, the buf must be fucked
             }
             self.n = self.n + 1;
             if self.repeat {

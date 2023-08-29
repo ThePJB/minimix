@@ -1,9 +1,9 @@
 use crate::sound_api::*;
-use crate::sound_buffer::*;
+use crate::signal::*;
 
 pub struct Sound {
     pub id: BufferHandle,
-    pub buf: SoundBuffer,
+    pub buf: Signal,
 }
 
 pub struct SoundLibrary {

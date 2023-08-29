@@ -3,7 +3,7 @@ use cpal::traits::*;
 use ringbuf::*;
 use crate::rng::*;
 use crate::mixer::*;
-use crate::sound_buffer::*;
+use crate::signal::*;
 use crate::sound_library::*;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
@@ -82,7 +82,7 @@ impl SoundAPI {
         }
     }
 
-    pub fn load_buffer(&mut self, buf: SoundBuffer) -> BufferHandle {
+    pub fn load_buffer(&mut self, buf: Signal) -> BufferHandle {
         let id = self.rng.next_u64();
         let h = BufferHandle::from(id);
         let s = Sound {
