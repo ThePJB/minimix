@@ -16,6 +16,10 @@ use crate::rng::Rng;
 // crossfade (incl. crossfade with self mmm)
 // FIR impulses
 
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    (1.0 - t) * a + t * b
+}
+
 impl Signal {
     pub fn zero(n: usize) -> Self {
         Signal { samples: vec![0.0; n] }
@@ -24,9 +28,19 @@ impl Signal {
         let samples = (0..n).map(|x| x as f32 * 2.0 * PI * f / fs).map(|phase| phase.sin()).collect();
         Signal { samples }
     }
+    pub fn sweep(n: usize, f1: f32, f2: f32, fs: f32) -> Self {
+        let mut samples = vec![0.0; n];
+        let mut phase = 0.0;
+        for i in 0..n {
+            let f = lerp(f1, f2, i as f32 / n as f32);
+            phase += 2.0 * PI * f / fs;
+            samples[i] = phase.sin();
+        }
+        Signal { samples }
+    }
     pub fn white(n: usize) -> Self {
         let mut rng = Rng::new_random();
-        let samples = (0..n).map(|x| rng.next_float()).collect();
+        let samples = (0..n).map(|x| rng.next_float()*2.0 - 1.0).collect();
         Signal { samples }
     }
     pub fn wnd_adsr(n: usize, a: f32, d: f32, s: f32, r: f32, fs: f32) -> Self {

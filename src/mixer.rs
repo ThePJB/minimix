@@ -58,7 +58,6 @@ impl Mixer {
     }
     pub fn load_sounds(&mut self) {
         while let Some(sound) = self.sound_consumer.next() {
-            dbg!("loadin sound", sound.id);
             self.sound_library.push(sound);
         }
     }
@@ -71,7 +70,6 @@ impl Mixer {
         }
     }
     pub fn play(&mut self, desc: SoundDesc, id: TrackHandle) {
-        dbg!("playin sound", id);
         self.tracks.push(Track::new(desc.h, id, desc.repeat, &self.sound_library));
     }
 }

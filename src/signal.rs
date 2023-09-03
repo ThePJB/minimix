@@ -1,3 +1,5 @@
+use crate::image::*;
+use crate::vector::*;
 use crate::load_wav::*;
 use std::ops::AddAssign;
 use std::ops::MulAssign;
@@ -29,11 +31,35 @@ pub struct Signal {
 }
 
 impl Signal {
+    pub fn plot(&self, path: &str) {
+        let xres = 640;
+        let yres = 480;
+        let mut buf = ImageBuffer::new(xres, yres);
+        buf.plot(&self.samples, vec4(0.0, 0.0, 1.0, 1.0), 3);
+        buf.dump_to_file(path);
+    }
+    pub fn len(&self) -> usize {
+        self.samples.len()
+    }
     pub fn load(path: &str) -> Self {
         Signal {samples: load_wav(path).expect("failed to load path") }
     }
     pub fn save(&self, path: &str) {
         write_wav(path, &self.samples, 44100)
+    }
+    pub fn set_len(&mut self, n: usize) {
+        self.samples.resize(n, 0.0);
+    }
+    pub fn conv_fast(&mut self, other: &Signal) -> Self {
+        let len = self.len() + other.len() - 1;
+        self.set_len(len);
+        let mut b = other.clone();
+        b.set_len(len);
+
+        let mut a = self.fft();
+        let b = b.fft();
+        a *= &b;
+        a.ifft()
     }
     pub fn conv_full(&mut self, other: &Signal) {
         let mut result = vec![0.0; self.samples.len() + other.samples.len() - 1];
@@ -68,6 +94,24 @@ impl Signal {
     // crossfades other into self. use polynomial interpolation. i did it in 
     pub fn crossfade(&mut self, other: &Signal, n_start: usize, n_end: usize) {
 
+    }
+    pub fn fft(&self) -> Self {
+        // bruh im not even using dat shit
+        // can it do real ffts or whatever  
+        use rustfft::{FftPlanner, num_complex::Complex};
+        let mut planner = FftPlanner::new();
+        let fft = planner.plan_fft_forward(self.len());
+        let mut buffer: Vec<Complex<f32>> = self.samples.iter().map(|x| Complex{ re: *x, im: 0.0f32}).collect();
+        fft.process(&mut buffer);
+        Signal { samples: buffer.iter().map(|x| x.re).collect() }
+    }
+    pub fn ifft(&self) -> Self {
+        use rustfft::{FftPlanner, num_complex::Complex};
+        let mut planner = FftPlanner::new();
+        let fft = planner.plan_fft_inverse(self.len());
+        let mut buffer: Vec<Complex<f32>> = self.samples.iter().map(|x| Complex{ re: *x, im: 0.0f32}).collect();
+        fft.process(&mut buffer);
+        Signal { samples: buffer.iter().map(|x| x.re).collect() }
     }
 }
 
