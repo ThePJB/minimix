@@ -2,6 +2,18 @@ use crate::*;
 use std::f32::consts::PI;
 
 #[test]
+pub fn basic() {
+    let mut mm = Minimixer::new(None);
+    let wn = 2.0 * PI * (1.0 / 44100.0);
+    let b = (0..44100).map(|i| i as f32 * wn * 220.0).map(|phase| phase.sin()).collect();
+    let s = Signal { samples: b };
+    let h = mm.load_buffer(s);
+    std::thread::sleep(std::time::Duration::from_millis(10));
+    mm.play(h, false);
+    std::thread::sleep(std::time::Duration::from_millis(1000));
+}
+
+#[test]
 pub fn chords() {
     let mut mm = Minimixer::new(None);
 

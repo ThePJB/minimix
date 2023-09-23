@@ -31,3 +31,8 @@ A mini audio mixer for Rust
 yea ideally i can just forward cpal device shit so i dont have to do it ay
 
 seems like i broke it from 
+
+
+well it works in 4e10db and also the clap sound in that is dope xD but takes 5ever to compute ay
+
+does saving 2 channels wav work?
