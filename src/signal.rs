@@ -35,4 +35,24 @@ impl Signal {
         }
         self
     }
-}
+
+    /// Commutates a signal (use for splitting a wav file by number of channels for example)
+    ///  n > 0
+    pub fn commutate(&self, n: usize) -> Vec<Signal> {
+        let mut signals = vec![Signal { samples: vec![] }];
+        for i in 0..self.samples.len() {
+            signals[i % n].samples.push(self.samples[i]);
+        }
+        signals
+    }
+
+    /// Interleaves a signal (inverse of commutation)
+    pub fn interleave(signals: &Vec<Signal>) -> Signal {
+        let n = signals[0].len() * signals.len();
+        let mut s = Signal { samples: vec![] };
+        for i in 0..n {
+            s.samples.push(signals[i%signals.len()].samples[i / n]);
+        }
+        s
+    }
+ }

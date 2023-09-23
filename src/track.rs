@@ -1,5 +1,5 @@
 use crate::sound_library::*;
-use crate::sound_api::*;
+use crate::api::*;
 
 pub struct Track {
     pub sound: BufferHandle,
@@ -24,10 +24,8 @@ impl Track {
     }
     pub fn accumulate_buffer(&mut self, data: &mut [f32], num_channels: usize, loaded_sounds: &SoundLibrary) {
         let b = loaded_sounds.get(self.sound);
-        for frame in data.chunks_mut(num_channels) {
-            for sample in frame {
-                *sample = b.buf.samples[self.n];
-            }
+        for sample in data {
+            *sample = b.buf.samples[self.n];
             self.n = self.n + 1;
             if self.repeat {
                 self.n = self.n % self.len
@@ -36,4 +34,18 @@ impl Track {
             }
         }
     }
+    // pub fn accumulate_buffer(&mut self, data: &mut [f32], num_channels: usize, loaded_sounds: &SoundLibrary) {
+    //     let b = loaded_sounds.get(self.sound);
+    //     for frame in data.chunks_mut(num_channels) {
+    //         for sample in frame {
+    //             *sample = b.buf.samples[self.n];
+    //         }
+    //         self.n = self.n + 1;
+    //         if self.repeat {
+    //             self.n = self.n % self.len
+    //         } else {
+    //             self.n = self.n.min(self.len - 1)
+    //         }
+    //     }
+    // }
 }

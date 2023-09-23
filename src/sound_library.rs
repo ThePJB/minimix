@@ -1,4 +1,4 @@
-use crate::sound_api::*;
+use crate::api::*;
 use crate::signal::*;
 
 pub struct Sound {
