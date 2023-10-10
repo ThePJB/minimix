@@ -1,38 +1,37 @@
 # Minimix
-A mini audio mixer for Rust
+A mini audio mixer for Rust. See the examples.
 
+## Purpose
+This is designed to be a primitive, that sits on top of cpal. If you were making game audio in cpal you would basically have to make this.
+
+It is also designed to be a primitive for DSP. This crate implements the bare minimum functionality but stay tuned for future package implementing music/DSP operations, FIR, IIR etc. If you can describe a sound at the sample level and know how to code it this is a usable foundation.
 
 ## Features
-* wav playback in realtime
+* device selection is forwarded from cpal or just use default device
 * wav load & save
-* adding signals
-* set volume of signals in dB
+* signal playback
 
-* signal gets put directly in callback buffer so u do need to interleave if its channels
+## Signal Abstraction
+Its literally an array of samples, i.e. there is no concept of sample rate or channels for simplicity, do that yourself. Supporting multiple channels is a matter of interleaving the signals. e.g. mono to stereo is  `signal.interleave(signal.clone())` (well more like `s.interleave2(&s.clone())` xD). See the examples.
+
+Additionally signal has no concept of sample rate so just resample everything.
+
+## Features
+These can be toggled off to reduce dependencies as they are not needed
+* WAV I/O (riff-wave)
+* Plotting (png)
+* Playback (cpal)
+* Synthesis (rustfft)
+
+## Todo
+* implement sound stopping
+* what about channels and repeats, sounds whack
+* optional features for all that other shit 
 
 ## Issues 
-* Supporting multiple channels
-    * sln: samples are whatever. commutate signal -> 2 signals, pan = adjust separately, whatever
-            play with signals addressed to channels as well as multi
-            get this what if we dont even address it to whatever channel we just interleave
-* Supporting different sample rates
-    * sln: samples are whatever. resample it once. Interp resample 
-* need example program
-* windowed and ADSR'd sins for playing chord progressions and have panning and stuff too
-* race condition: load & play
-    * sln: dont read play queue while anything in load queue
-* supporting devices (default device path) (query devices and select device when making the endpoint, or the 'Minimixer)
+* race condition: load & play (I mean its not going to be a problem in a game or whatever but thats why in the examples there is a 10ms sleep)
+* not the highest quality resampling - its a whole thing - feel free to use libsamplerate-rs
+
+## Random notes 
 * signal power
-* impl stop
-* release
-
-* probably a bug with n len and repeat of numerous channels if it not evenly divides
-
-yea ideally i can just forward cpal device shit so i dont have to do it ay
-
-seems like i broke it from 
-
-
-well it works in 4e10db and also the clap sound in that is dope xD but takes 5ever to compute ay
-
-does saving 2 channels wav work?
+* bruh panning and shit is gonna be lit as fuck

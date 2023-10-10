@@ -1,14 +1,31 @@
 use riff_wave::*;
+use crate::signal::*;
 use std::io::Read;
 use std::io::BufWriter;
 use std::fs::File;
 
-pub fn load_wav(path: &str) -> Option<Vec<f32>> {
+pub trait Wav {
+    fn load(path: &str) -> (u32, Self);
+    fn save(&self, path: &str, sample_rate: u32);
+}
+
+impl Wav for Signal {
+    fn load(path: &str) -> (u32, Self) {
+        let (sample_rate, samples) = load_wav(path).expect("failed to load path");
+        (sample_rate, Signal { samples })
+    }
+    fn save(&self, path: &str, sample_rate: u32) {
+        write_wav(path, &self.samples, sample_rate)
+    }
+}
+
+pub fn load_wav(path: &str) -> Option<(u32, Vec<f32>)> {
     let mut file = std::fs::File::open(path).ok()?;
     let mut wav_data = Vec::new();
 
     let wave_reader = riff_wave::WaveReader::new(&mut file).ok()?;
     let num_channels = wave_reader.pcm_format.num_channels;
+    let sample_rate = wave_reader.pcm_format.sample_rate;
     let bits_per_sample = wave_reader.pcm_format.bits_per_sample;
 
     if num_channels == 1 {
@@ -19,7 +36,7 @@ pub fn load_wav(path: &str) -> Option<Vec<f32>> {
                 let sample_f32 = sample_i16 as f32 / i16::MAX as f32;
                 wav_data.push(sample_f32);
             }
-            return Some(wav_data);
+            return Some((sample_rate, wav_data));
         }
     }
 
@@ -43,7 +60,7 @@ pub fn test_save_load() {
     std::thread::sleep(std::time::Duration::from_millis(10));
     let samples2 = load_wav("test_save_load.wav");
     assert!(samples2.is_some());
-    let samples2 = samples2.unwrap();
+    let (sample_rate, samples2) = samples2.unwrap();
     assert_eq!(samples.len(), samples2.len());
     for i in 0..samples.len() {
         assert_eq!(samples[i], samples2[i]);

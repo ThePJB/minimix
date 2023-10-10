@@ -1,11 +1,11 @@
 mod rng;
-mod load_wav;
-mod mixer;
-mod api;
-mod sound_library;
-mod track;
-mod signal;
-mod example;
+#[cfg(feature = "wav")]
+pub mod wav;
 
-pub use api::*;
+#[cfg(feature = "playback")]
+pub mod playback;
+
+mod signal;
+pub mod interp;
+
 pub use signal::*;

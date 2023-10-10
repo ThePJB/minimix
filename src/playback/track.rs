@@ -1,5 +1,5 @@
-use crate::sound_library::*;
-use crate::api::*;
+use super::sound_library::*;
+use super::api::*;
 
 pub struct Track {
     pub sound: BufferHandle,
@@ -25,16 +25,17 @@ impl Track {
     pub fn accumulate_buffer(&mut self, data: &mut [f32], num_channels: usize, loaded_sounds: &SoundLibrary) {
         let b = loaded_sounds.get(self.sound);
         for sample in data {
-            let t = 500;
-            let n = self.n % t;
-            *sample = (n as f32 / - (t as f32 / 2.0)) / (t as f32 / 2.0)
-            // *sample = b.buf.samples[self.n];
-            // self.n = self.n + 1;
-            // if self.repeat {
-            //     self.n = self.n % self.len
-            // } else {
-            //     self.n = self.n.min(self.len - 1)
-            // }
+            // let t = 500;
+            // let n = self.n % t;
+            // *sample = (n as f32 / - (t as f32 / 2.0)) / (t as f32 / 2.0);
+            // self.n += 1;
+            *sample = b.buf.samples[self.n];
+            self.n = self.n + 1;
+            if self.repeat {
+                self.n = self.n % self.len
+            } else {
+                self.n = self.n.min(self.len - 1)
+            }
         }
     }
     // no work.. did it work previously? did it work with accumulate_buffer?

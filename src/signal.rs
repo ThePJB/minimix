@@ -1,5 +1,4 @@
-use crate::load_wav::*;
-use ordered_float::*;
+use crate::interp::*;
 
 #[derive(Clone)]
 pub struct Signal {
@@ -10,17 +9,21 @@ impl Signal {
     pub fn len(&self) -> usize {
         self.samples.len()
     }
-    pub fn load(path: &str) -> Self {
-        Signal {samples: load_wav(path).expect("failed to load path") }
+    pub fn max(&self) -> f32 {
+        let mut max = std::f32::NEG_INFINITY;
+        for sample in self.samples.iter() {
+            if *sample > max {
+                max = *sample;
+            }
+        }
+        max
     }
-    pub fn save(&self, path: &str, sample_rate: u32) {
-        write_wav(path, &self.samples, sample_rate)
-    }
+
     // set_vol 0 to normalize
     // values are in range -1 to 1
     pub fn set_vol(mut self, db: f32) -> Signal {
         let scaling_factor = 10.0_f32.powf(db / 20.0);
-        let max = self.samples.iter().map(|x| OrderedFloat(x.abs())).max().unwrap().0;
+        let max = self.max();
         for sample in self.samples.iter_mut() {
             *sample /= max;
             *sample *= scaling_factor;
@@ -46,13 +49,22 @@ impl Signal {
         signals
     }
 
+    pub fn interleave2(&self, other: &Signal) -> Signal {
+        Self::interleave(&vec![self.clone(), other.clone()])
+    }
+
     /// Interleaves a signal (inverse of commutation)
     pub fn interleave(signals: &Vec<Signal>) -> Signal {
         let n = signals[0].len() * signals.len();
         let mut s = Signal { samples: vec![] };
         for i in 0..n {
-            s.samples.push(signals[i%signals.len()].samples[i / n]);
+            s.samples.push(signals[i%signals.len()].samples[i / signals.len()]);
         }
         s
     }
- }
+
+    pub fn resample(&self, r: f32) -> Signal {
+        let samples = lanczos_interp(&self.samples, r, 4);
+        Signal { samples }
+    }
+}

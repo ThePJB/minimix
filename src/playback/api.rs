@@ -2,9 +2,9 @@
 use cpal::traits::*;
 use ringbuf::*;
 use crate::rng::*;
-use crate::mixer::*;
+use super::mixer::*;
 use crate::signal::*;
-use crate::sound_library::*;
+use super::sound_library::*;
 
 pub use cpal::Device;
 
@@ -119,7 +119,6 @@ impl Minimixer {
     }
 
     pub fn play(&mut self, sound: BufferHandle, repeat: bool) -> TrackHandle {
-        dbg!("play: ", sound);
         let params = SoundDesc {
             repeat,
             h: sound,
@@ -128,7 +127,6 @@ impl Minimixer {
     }
     
     pub fn play_raw(&mut self, params: SoundDesc) -> TrackHandle {
-        dbg!("playraw: ", params.h);
         let id = self.rng.next_u64();
         let h = TrackHandle::from(id);
         let command = Command::Play { params, id: h };

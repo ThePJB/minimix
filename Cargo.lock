@@ -390,13 +390,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
+name = "minimg"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb315c927fc816876592ef5ee3f98ba6e94b51d4988d2165b16ad71bda439c82"
+dependencies = [
+ "minvect",
+ "png",
+]
+
+[[package]]
 name = "minimix"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "cpal",
- "ordered-float",
- "png",
+ "minimg",
+ "minimix",
+ "minvect",
  "riff-wave",
  "ringbuf",
  "rustfft",
@@ -411,6 +422,12 @@ dependencies = [
  "adler",
  "simd-adler32",
 ]
+
+[[package]]
+name = "minvect"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cfdeea849d7c1b2ddb4012d5e877e1894e16801af21d452a9c9ad354be37b74"
 
 [[package]]
 name = "ndk"
@@ -550,15 +567,6 @@ name = "once_cell"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd8b5dd2ae5ed71462c540258bedcb51965123ad7e7ccf4b9a8cafaa4a63576d"
-
-[[package]]
-name = "ordered-float"
-version = "3.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a54938017eacd63036332b4ae5c8a49fc8c0c1d6d629893057e4f13609edd06"
-dependencies = [
- "num-traits",
-]
 
 [[package]]
 name = "parking_lot"
